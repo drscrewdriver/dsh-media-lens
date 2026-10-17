@@ -1,0 +1,121 @@
+{
+  "name": "dsh-media-lens",
+  "version": "0.1.0",
+  "description": "Media evidence lens + provider router for DeepSeek Harness: media_read_video / media_read_audio / media_read_image turn local media into structured evidence (timeline / transcript / regions) via host-registered multimodal models first, configured OpenAI-compatible endpoints second, and local ffmpeg/CLI fallbacks last. Every fallback is recorded in meta.attempts — a fallback is never silent.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drscrewdriver/dsh-media-lens.git"
+  },
+  "homepage": "https://github.com/drscrewdriver/dsh-media-lens#readme",
+  "bugs": {
+    "url": "https://github.com/drscrewdriver/dsh-media-lens/issues"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "locale",
+    "cordis.patch.yml",
+    "dsh.plugin.json",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && tsdown --config tsdown.client.config.ts && node scripts/check-line.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "check:line": "node scripts/check-line.mjs",
+    "hosts:check": "node scripts/sync-hosts.mjs",
+    "hosts:write": "node scripts/sync-hosts.mjs --write",
+    "prepack": "npm run build && npm run hosts:check"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.4"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-attachment": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-llm": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-tools": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "react": ">=18 <19"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-client-locale": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-client-ui-settings": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-client-ui-slots": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-attachment": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-util-values": "0.2.0-rc.2",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.19.0",
+    "@types/react": "^18.3.31",
+    "eslint": "^10.8.1",
+    "react": "^18.3.1",
+    "tsdown": "^0.23.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "media",
+    "video",
+    "audio",
+    "image",
+    "multimodal",
+    "evidence",
+    "failover"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "tag": "dsh-0.2.0"
+  }
+}

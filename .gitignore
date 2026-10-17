@@ -1,0 +1,7 @@
+node_modules/
+lib/
+*.tgz
+.check-line-tmp/
+.compat-results/
+*.log
+.DS_Store
