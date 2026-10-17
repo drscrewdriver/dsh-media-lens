@@ -1,0 +1,1 @@
+{ "meta": { "title": "媒体证据透镜", "description": "把本地视频/音频/图像经 provider failover 链变成结构化证据；每次降级都被记录。" } }
