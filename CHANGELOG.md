@@ -80,3 +80,9 @@ vision-bridge 发布版：选择器可见的透镜包装 + 配置热生效根因
 - 宿主 service 全部 `ctx.get()` 软读优雅降级（C2）；运行时依赖仅 schemastery。
 - 131 vitest 用例全绿（含 `tests/inject.test.ts` 26 例覆盖 vision-bridge 与 volatile 取直）；`check:line` 门禁保证 lib/ 与 src/ 逐字节对齐（C3）。
 - 宿主线钉三线全 rc：`0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2`（engines.dsh / peerDependencies / dsh.plugin.json / README 四写点由 sync-hosts 单源下发；publishConfig.tag = dsh-0.2.0）。
+
+## 0.2.1 (2026-10-23)
+
+### Changed
+- **声明配合姊妹插件**：将两个配合插件加入 `peerDependencies` 并标 `optional`（`dsh-thinking-levels >=4.4.4`、`dsh-llm-openai-completions >=0.4.4`）——多模态模型注册/认证与音视频直传靠它们接管（thinking-levels 管模型配置录入/接管登记，openai-completions 做 OpenAI-compatible 传输接管将 file 块序列化成 video_url/input_audio）。二者均为 optional peer，不装则相应能力自动降级不报错，不触发 npm 强制拉装、不与宿主版本闸门冲突（两包 latest engines.dsh 均已含 0.2.1-rc.2）。README 新增「配合插件」小节。
+

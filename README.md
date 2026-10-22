@@ -135,6 +135,15 @@ pnpm add ./dsh-media-lens --ignore-workspace-root-check   # 或 npm pack 后装 
 - ffmpeg / ffprobe 在 PATH 上可用时启用抽帧/重编码/时长探测；缺失时元数据降级（记录在 attempts）。
 - Node 原生 fetch（≥22.19）。
 
+## 配合插件（可选 peer，非硬依赖）
+
+media-lens 本身提供「工具处理多模态对象」（media_read_video/audio/image）。要把**多模态模型注册/认证进宿主**并让**音视频直传**真正内联（而非只看到文件 handle 文本），需两个姊妹插件配合——二者声明为 `optional` peer，不装则相应能力自动降级，不报错：
+
+- **dsh-thinking-levels**：模型配置录入 / 认证与 reasoning_effort 管理面——音视频直传链路的模型由此登记。
+- **dsh-llm-openai-completions**：OpenAI-compatible 传输接管（takeover）——把 file 块序列化成 video_url / input_audio 真正上送，未接管线路宿主只投影 handle 文本，插件检测到即落抽帧/ASR 兜底。
+
+装机走宿主 profile（autoInstallPeers:false + hoisted），姊妹插件由 bundles 各自注册，optional peer 不触发 npm 拉装、不与宿主版本闸门冲突。
+
 ## 家族节与 tab 权重（bundle + 家族子 tab）
 
 本插件为 host+client 双半 bundle（`dsh.plugin.json.client.main` 载 client 半身）。客户端半身把设置卡贡献进 `dsh-family` 家族节（顶级节 order 40、label「起子插件设置」，与本插件无关、由家族所有者统一渲染）：
