@@ -133,3 +133,18 @@ export function softReadLlm(ctx: unknown): LlmRuntime | undefined {
     return undefined
   }
 }
+
+/**
+ * 快照过滤（vision-bridge 自排除面）：剔除 keep 为假的模型并重算模态分组。
+ * wrapper 注册后自己也会出现在宿主注册表——不剔除则读手 auto 会选中自己的
+ * wrapper 造成递归。工具链、选择、候选路由共用同一快照，一处过滤全覆盖。
+ */
+export function filterDiscoverySnapshot(
+  snapshot: DiscoverySnapshot,
+  keep: (model: DiscoveredModel) => boolean,
+): DiscoverySnapshot {
+  if (snapshot.available === false) return snapshot
+  const models = snapshot.models.filter(keep)
+  if (models.length === snapshot.models.length) return snapshot
+  return { available: true, models, groups: groupByKind(models) }
+}

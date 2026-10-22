@@ -6,7 +6,7 @@
  *    只在宿主 profile 内装载。三项宿主子包 peer 全枚举写入；
  *    `@deepseek-ai/cordis` 保持必需 `^4.0.2` 不动。
  * 2. 写点载体：package.json `engines.dsh` + `peerDependencies`。本仓为纯服务端
- *    cordis 插件，**无 dsh.plugin.json**，故不写 manifest。
+ *    cordis 插件；dsh.plugin.json 的 engines.dsh 与 version 亦为本脚本写点（注释历史遗留，代码为准）。
  * 3. README 托管块：本仓语言集仅 README.md（英文）。
  *
  * 双模式：默认只校验（exit 1 = 有漂移）；`--write` 实际写盘。

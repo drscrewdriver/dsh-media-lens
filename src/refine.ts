@@ -1,10 +1,19 @@
 /**
- * Phase 7（FR-15..19）：链出口一次 refine pass。
+ * Phase 7（FR-15..19）+ refine-source-gate：链出口一次 refine pass。
  *
  * 语义：主链首个成功 → finalize 出 MediaEvidence → 本模块可选地再过一次文本
  * 模型产出规范化证据；失败保 raw + 追加 `meta.warnings`，不 throw 到链下一级
  * （读手已成功，主链归属保留）。refine 归属落 `meta.refineAttempt.provider =
- * 'refined:<selection>'`，`meta.provider` 保留读手前缀（M19 归属分层）。
+ * 'refined:openai/<model>'`，`meta.provider` 保留读手前缀（M19 归属分层）。
+ *
+ * 来源闸门（refine-source-gate）：转述手只允许「用户自配、非插件注入」端点。
+ * - 传输改 configured 直连（`callVlWithRotation`），不再经 `ctx.llm.stream`——
+ *   宿主 runtime 路由表无法区分「宿主原生注册」与「插件注入」模型，直连
+ *   configured 端点天然够不到注入面。
+ * - `isTrustedRefineProvider(vlEndpoint, provider)` 判凭据存在性 + provider 名
+ *   白名单（`openai`）；命中不可信来源 → 原样返回 evidence，不写 refineAttempt、
+ *   不追 warning（守 M28「关时逐字段一致」，与 llm 缺失/非显式 selection 现有
+ *   跳过路径同构）。
  *
  * 传输纪律：
  * - 输入指令 = EVIDENCE_REFINE_INSTRUCTION 四要素（反注入 / verbatim /
@@ -13,17 +22,17 @@
  * - local 兜底（provider='local:metadata' 或 degraded='local-metadata-only'）
  *   跳过：无文本可精炼，防止 strictLocalOnly 用户"明明关了远端却被 refine
  *   拉回远端"的隐私泄漏。
- * - structuredOutput 通过 ctx.llm.stream 无法注入 response_format（宿主
- *   GenerateOptions 无该字段，见 findings 待核实节），指令层用 STRICT JSON 兜住；
- *   若日后走 configured 直连 fetch 再补 payload-schema 注入位。
+ * - structuredOutput 由 configured 端点开关共享（FR-19），直连后经
+ *   `evidenceResponseFormat` 真正注入 response_format（此前 ctx.llm.stream
+ *   注不进去，见 findings 待核实节——本改造顺带修复）。
  * - 错误文本先 `redactSecrets` 后截断（对齐 M23 redact-before-clip）。
  */
 
-import type { LlmRuntime, RequestMessage } from '@deepseek-ai/dsh-llm'
 import type { Attempt, MediaEvidence } from './evidence.ts'
 import { validateEvidence } from './evidence.ts'
-import type { DiscoverySnapshot } from './discovery.ts'
-import { resolveSelection } from './discovery.ts'
+import { isTrustedRefineProvider, parseModelSelection } from './config.ts'
+import { callVlWithRotation } from './providers/openai-vl.ts'
+import type { OpenAiVlConfig } from './providers/payload-schema.ts'
 import { redactSecrets } from './util/redact.ts'
 
 export const EVIDENCE_REFINE_INSTRUCTION = [
@@ -37,10 +46,9 @@ export const EVIDENCE_REFINE_INSTRUCTION = [
 ].join(' ')
 
 export interface RefineDeps {
-  llm: LlmRuntime | undefined
-  /** 复用主链的 discovery 快照（不新建选路）。 */
-  snapshot: () => DiscoverySnapshot
-  /** 显式 `'provider/model'`；'' 或 'auto' 由调用方判过，此处再兜一层。 */
+  /** configured 直连端点（`providers.openai` 解析值）；undefined = 未自配端点 → refine 不可用。 */
+  vlEndpoint: OpenAiVlConfig | undefined
+  /** 显式 `'openai/<model>'` 或裸 model；'' / 'auto' 由调用方判过，此处再兜一层。 */
   selection: string
   /** 供 redact 使用（configured:openai 的 apiKey/baseUrl；无则传 []）。 */
   secrets?: readonly (string | undefined)[]
@@ -95,52 +103,47 @@ function extractTopLevelJson(text: string): Record<string, unknown> | undefined 
 }
 
 /**
- * refine pass 主入口。三种前置条件命中即**原样返回证据**（不写 refineAttempt、
+ * refine pass 主入口。四类前置条件命中即**原样返回证据**（不写 refineAttempt、
  * 不追 warning，与关时行为一致，守 M28 "关时输出与 Phase 6 逐字段一致"）：
- * - deps.llm 缺失（宿主 llm 服务未软读到）；
- * - selection 非显式（'' / 'auto' / 无法解析 provider/model）；
+ * - deps.vlEndpoint 缺失（用户未自配 configured 端点）；
+ * - selection 非显式（'' / 'auto'）；
+ * - 来源闸门不通过（selection 解析出的 provider 不在 configured 白名单，
+ *   registered:/multimodal: 等插件注入面一律拒）；
  * - 输入证据来自 local 兜底（无文本可 refine）。
- * 其他情形：一次 ctx.llm.stream 直调 → 抽 JSON → 覆盖 timeline/transcript/
- * regions/uncertainty（C9：source/attempts/provider/generatedAt 不被修改）→
- * validateEvidence 通过即成功；任一失败落 refineAttempt.ok=false + warnings。
+ * 其他情形：一次 configured 直连（`callVlWithRotation`）→ 抽 JSON → 覆盖
+ * timeline/transcript/regions/uncertainty（C9：source/attempts/provider/
+ * generatedAt 不被修改）→ validateEvidence 通过即成功；任一失败落
+ * refineAttempt.ok=false + warnings。
  */
 export async function refineEvidence(
   evidence: MediaEvidence,
   deps: RefineDeps,
   signal?: AbortSignal,
 ): Promise<MediaEvidence> {
-  if (deps.llm === undefined) return evidence
+  if (deps.vlEndpoint === undefined) return evidence
   if (isLocalOnly(evidence)) return evidence
   const trimmedSelection = deps.selection.trim()
   if (trimmedSelection === '' || trimmedSelection === 'auto') return evidence
-  const parsed = resolveSelection(deps.snapshot(), evidence.kind, trimmedSelection)
-  if (parsed === undefined || parsed.source !== 'explicit') return evidence
+  // 来源闸门：裸 model（无 slash）归一为 configured 白名单 'openai'（S1）；
+  // 显式 `openai/<model>` 取 provider='openai'；registered:/multimodal: 一律拒。
+  const parsed = parseModelSelection(trimmedSelection) ?? { provider: 'openai', model: trimmedSelection }
+  if (!isTrustedRefineProvider(deps.vlEndpoint, parsed.provider)) return evidence
 
-  const providerName = `refined:${parsed.provider}/${parsed.model}`
+  // 请求 model 取 configured 端点自配的 model（单源，不采纳 selection 的 model 段）。
+  const providerName = `refined:openai/${deps.vlEndpoint.model}`
   const started = Date.now()
-  const messages: RequestMessage[] = [{
-    role: 'user',
-    content: [{
-      type: 'text',
-      text: `${EVIDENCE_REFINE_INSTRUCTION}\n\nEvidence to refine:\n${JSON.stringify(evidence)}`,
-    }],
+  const content: unknown[] = [{
+    type: 'text',
+    text: `${EVIDENCE_REFINE_INSTRUCTION}\n\nEvidence to refine:\n${JSON.stringify(evidence)}`,
   }]
 
   let text = ''
+  let keyIndex: number | undefined
   let rawError: string | undefined
   try {
-    for await (const chunk of deps.llm.stream({
-      provider: parsed.provider,
-      model: parsed.model,
-      messages,
-      ...(signal !== undefined ? { signal } : {}),
-    })) {
-      if (chunk.type === 'text-delta') text += chunk.text
-      if (chunk.type === 'finish' && chunk.reason.kind !== 'stop' && chunk.reason.kind !== 'max-tokens') {
-        rawError = `refine llm finished with ${chunk.reason.kind}`
-        break
-      }
-    }
+    const result = await callVlWithRotation(deps.vlEndpoint, content, signal)
+    text = result.text
+    keyIndex = result.keyIndex
   } catch (err) {
     rawError = err instanceof Error ? err.message : String(err)
   }
@@ -149,13 +152,25 @@ export async function refineEvidence(
 
   if (rawError !== undefined) {
     const safe = redactSecrets(rawError, secrets).slice(0, 300)
-    const attempt: Attempt = { provider: providerName, ok: false, error: safe, ms }
+    const attempt: Attempt = {
+      provider: providerName,
+      ok: false,
+      error: safe,
+      ms,
+      ...(keyIndex !== undefined ? { keyIndex } : {}),
+    }
     return withAttempt(evidence, attempt, `refine failed: ${safe}`)
   }
 
   const candidate = extractTopLevelJson(text)
   if (candidate === undefined) {
-    const attempt: Attempt = { provider: providerName, ok: false, error: 'no parsable JSON in refine output', ms }
+    const attempt: Attempt = {
+      provider: providerName,
+      ok: false,
+      error: 'no parsable JSON in refine output',
+      ms,
+      ...(keyIndex !== undefined ? { keyIndex } : {}),
+    }
     return withAttempt(evidence, attempt, 'refine failed: no parsable JSON in output')
   }
 
@@ -179,9 +194,15 @@ export async function refineEvidence(
   const invalid = validateEvidence(merged)
   if (invalid !== null) {
     const safe = redactSecrets(invalid, secrets).slice(0, 300)
-    const attempt: Attempt = { provider: providerName, ok: false, error: `refined evidence invalid: ${safe}`, ms }
+    const attempt: Attempt = {
+      provider: providerName,
+      ok: false,
+      error: `refined evidence invalid: ${safe}`,
+      ms,
+      ...(keyIndex !== undefined ? { keyIndex } : {}),
+    }
     return withAttempt(evidence, attempt, `refine failed: ${safe}`)
   }
-  const okAttempt: Attempt = { provider: providerName, ok: true, ms }
+  const okAttempt: Attempt = { provider: providerName, ok: true, ms, ...(keyIndex !== undefined ? { keyIndex } : {}) }
   return withAttempt(merged, okAttempt)
 }

@@ -1,6 +1,6 @@
 {
   "name": "dsh-media-lens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Media evidence lens + provider router for DeepSeek Harness: media_read_video / media_read_audio / media_read_image turn local media into structured evidence (timeline / transcript / regions) via host-registered multimodal models first, configured OpenAI-compatible endpoints second, and local ffmpeg/CLI fallbacks last. Every fallback is recorded in meta.attempts — a fallback is never silent.",
   "type": "module",
   "license": "MIT",
@@ -62,12 +62,12 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-attachment": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
-    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
-    "@deepseek-ai/dsh-llm": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
-    "@deepseek-ai/dsh-tools": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1",
+    "@deepseek-ai/dsh-attachment": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2",
     "react": ">=18 <19"
   },
   "peerDependenciesMeta": {
@@ -99,7 +99,7 @@
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
-    "dsh": "0.1.7-rc.2 || 0.2.0-rc.2 || 0.2.1-rc.1"
+    "dsh": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2"
   },
   "keywords": [
     "deepseek-harness",

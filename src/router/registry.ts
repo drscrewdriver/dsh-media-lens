@@ -39,7 +39,8 @@ export interface Provider {
   readonly remote: boolean
   /** 运行时可用性（服务缺失 / 未配置 key / 冷却之外的动态门槛）。 */
   available(): boolean
-  run(req: LensRequest): Promise<Chunk>
+  /** signal：调用方取消（vision-bridge 请求改写随宿主请求中止）；工具层可不传。 */
+  run(req: LensRequest, signal?: AbortSignal): Promise<Chunk>
 }
 
 export class ProviderRegistry {

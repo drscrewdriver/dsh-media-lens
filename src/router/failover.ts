@@ -99,6 +99,8 @@ export interface ChainRunOptions {
    * warnings，不 throw 到链下一级（读手已成功）。
    */
   refine?: (evidence: MediaEvidence) => Promise<MediaEvidence>
+  /** 调用方取消（vision-bridge 请求改写随宿主请求中止）；逐跳透传给 provider.run。 */
+  signal?: AbortSignal
 }
 
 function errorText(err: unknown): string {
@@ -140,7 +142,7 @@ export async function runChain(
   for (const provider of ordered) {
     const started = options.now?.() ?? Date.now()
     try {
-      const chunk: Chunk = await provider.run(req)
+      const chunk: Chunk = await provider.run(req, options.signal)
       const ms = Math.max(0, (options.now?.() ?? Date.now()) - started)
       const failed = attempts.filter((a) => !a.ok)
       attempts.push({

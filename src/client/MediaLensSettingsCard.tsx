@@ -174,6 +174,18 @@ export function MediaLensSettingsCard({ scope, t }: LensCardProps) {
       <div style={heading}>{t('refineTitle')}</div>
       <Check label={t('refineEnabled')} value={value.refine.enabled} disabled={!editable} onCommit={(v) => patch((d) => { d.refine.enabled = v })} />
       <BufferedText label={t('refineModel')} value={value.refine.model} disabled={!editable} placeholder="provider/model" onCommit={(v) => patch((d) => { d.refine.model = v })} />
+
+      <div style={heading}>{t('injectTitle')}</div>
+      <Check label={t('injectEnabled')} value={value.inject.enabled} disabled={!editable} onCommit={(v) => patch((d) => { d.inject.enabled = v })} />
+      <div style={hint}>{t('injectEnabledHint')}</div>
+      <BufferedText
+        label={t('injectFamilies')}
+        value={value.inject.families.join(', ')}
+        disabled={!editable}
+        placeholder="deepseek, glm, mimo"
+        onCommit={(v) => patch((d) => { d.inject.families = v.split(/[,，]/).map((s) => s.trim()).filter((s) => s !== '') })}
+      />
+      <div style={hint}>{t('injectFamiliesHint')}</div>
     </div>
   )
 }

@@ -177,7 +177,7 @@ export function createAsrProvider(endpoint: { name: string; command: string }, t
     media: ['audio'],
     remote: false,
     available: () => endpoint.command.trim() !== '',
-    async run(req: LensRequest): Promise<Chunk> {
+    async run(req: LensRequest, _signal?: AbortSignal): Promise<Chunk> {
       const tokens = tokenizeCommand(endpoint.command, req.path)
       const stdout = await executeCommand(tokens, timeoutMs)
       const entries = parseTranscription(stdout)

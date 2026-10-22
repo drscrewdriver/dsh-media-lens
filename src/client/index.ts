@@ -146,6 +146,7 @@ export function apply(ctx: ClientContext): void {
               { op: 'set', path: ['models'], value: next.models },
               { op: 'set', path: ['providers'], value: next.providers },
               { op: 'set', path: ['refine'], value: next.refine },
+              { op: 'set', path: ['inject'], value: next.inject },
             ])
           }
           const results = await Promise.all([
@@ -154,6 +155,7 @@ export function apply(ctx: ClientContext): void {
             form.set('models', next.models),
             form.set('providers', next.providers),
             form.set('refine', next.refine),
+            form.set('inject', next.inject),
           ])
           return results.every(Boolean)
         } catch (error) {

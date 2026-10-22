@@ -41,8 +41,8 @@ export function createConfiguredOpenAiProvider(vlConfig: () => OpenAiVlConfig): 
       const c = vlConfig()
       return c.baseUrl.trim() !== '' && c.model.trim() !== '' && c.apiKey.trim() !== ''
     },
-    async run(req: LensRequest) {
-      return runOpenAiVl(vlConfig(), req)
+    async run(req: LensRequest, signal?: AbortSignal) {
+      return runOpenAiVl(vlConfig(), req, undefined, signal)
     },
   }
 }
@@ -59,7 +59,7 @@ export function createFrameLensProvider(imageChain: Provider[]): Provider {
     media: ['video'],
     remote: imageChain.some((p) => p.remote),
     available: () => imageChain.some((p) => p.available()),
-    async run(req: LensRequest) {
+    async run(req: LensRequest, signal?: AbortSignal) {
       if (req.durationSec === undefined) {
         throw new Error('cannot sample frames: duration unknown (ffprobe unavailable?)')
       }
@@ -75,7 +75,7 @@ export function createFrameLensProvider(imageChain: Provider[]): Provider {
       try {
         for (const provider of imageChain) {
           if (!provider.available()) continue
-          const chunk = await provider.run(frameReq)
+          const chunk = await provider.run(frameReq, signal)
           return {
             ...chunk,
             kind: 'video',
@@ -110,12 +110,12 @@ export function createReencodeProvider(inner: Provider): Provider {
     media: ['video'],
     remote: inner.remote,
     available: () => inner.available(),
-    async run(req: LensRequest) {
+    async run(req: LensRequest, signal?: AbortSignal) {
       if (req.budget !== 'reencode') throw new Error('reencode provider only handles the reencode budget')
       const out = await reencode(req.path)
       if (out === undefined) throw new Error('ffmpeg reencode failed')
       try {
-        const chunk = await inner.run({ ...req, path: out, instruction: req.instruction })
+        const chunk = await inner.run({ ...req, path: out, instruction: req.instruction }, signal)
         return {
           ...chunk,
           source: sourceOf(req),

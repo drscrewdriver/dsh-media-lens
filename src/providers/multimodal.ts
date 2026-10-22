@@ -29,10 +29,10 @@ export function createMultimodalProvider(deps: RegisteredDeps, kind: Extract<Med
         && deps.attachments !== undefined
         && resolveSelection(deps.snapshot(), kind, deps.selectionFor(kind)) !== undefined
     },
-    async run(req: LensRequest): Promise<Chunk> {
+    async run(req: LensRequest, signal?: AbortSignal): Promise<Chunk> {
       const selection = resolveSelection(deps.snapshot(), kind, deps.selectionFor(kind))
       if (selection === undefined) throw new Error(`no registered multimodal model selected for ${kind}`)
-      const chunk = await callRegisteredModel(deps, selection, req)
+      const chunk = await callRegisteredModel(deps, selection, req, signal)
       return { ...chunk, meta: { ...chunk.meta, provider: providerNameFor(selection) } }
     },
   }

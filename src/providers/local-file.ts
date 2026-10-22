@@ -15,7 +15,7 @@ export function createLocalFileProvider(): Provider {
     media: ['video', 'audio', 'image'],
     remote: false,
     available: () => true,
-    async run(req: LensRequest): Promise<Chunk> {
+    async run(req: LensRequest, _signal?: AbortSignal): Promise<Chunk> {
       const probed = await probe(req.path)
       const source = {
         path: req.path,
