@@ -1,5 +1,7 @@
 # Changelog
 
+0.2.2: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
+
 ## 0.1.0 (2026-10-06)
 
 首版：透镜线（A）+ 路由线（B）单计划双线落地。

@@ -24,7 +24,7 @@ export const supportedHosts = Object.freeze([
   // 0.2.1 线（alpha/beta 不入列）；rc.2 = desktop manifest 推荐 rc（2026-10-23 补，
   // 契约面 diff：adapter 面逐法核对仅新增 imageRequestTarget 直调，wrapper 已补）
   '0.2.1-rc.1',
-  '0.2.1-rc.2',
+  '0.2.1-rc.2', '0.2.1-rc.3',
 ])
 
 /** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑）。 */
