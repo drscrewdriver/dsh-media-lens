@@ -1,6 +1,6 @@
 {
   "id": "dsh-external/dsh-media-lens",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "./lib/index.js",
   "description": "Media evidence lens + provider router for DeepSeek Harness (media_read_video / media_read_audio / media_read_image).",
   "engines": {

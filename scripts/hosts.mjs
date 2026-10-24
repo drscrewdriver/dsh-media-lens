@@ -31,7 +31,7 @@ export const supportedHosts = Object.freeze([
 export const peerRange = supportedHosts.join(' || ')
 
 /** 本地开发基线（devDependencies 引入的宿主包一律钉这里）。 */
-export const developmentHost = '0.2.0-rc.2'
+export const developmentHost = '0.2.1-rc.3'
 
 /**
  * peer 闸门指向的宿主子包：本插件为纯服务端 cordis 插件，消费的宿主契约面是
