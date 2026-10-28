@@ -24,14 +24,14 @@ export const supportedHosts = Object.freeze([
   // 0.2.1 线（alpha/beta 不入列）；rc.2 = desktop manifest 推荐 rc（2026-10-23 补，
   // 契约面 diff：adapter 面逐法核对仅新增 imageRequestTarget 直调，wrapper 已补）
   '0.2.1-rc.1',
-  '0.2.1-rc.2', '0.2.1-rc.3',
+  '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4',
 ])
 
 /** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑）。 */
 export const peerRange = supportedHosts.join(' || ')
 
 /** 本地开发基线（devDependencies 引入的宿主包一律钉这里）。 */
-export const developmentHost = '0.2.1-rc.3'
+export const developmentHost = '0.2.1-rc.4'
 
 /**
  * peer 闸门指向的宿主子包：本插件为纯服务端 cordis 插件，消费的宿主契约面是
