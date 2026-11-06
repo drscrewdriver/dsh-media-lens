@@ -31,6 +31,9 @@ export function createReadVideoTool(deps: LensDeps, gate: CooldownGate, log: (m:
       render: evidenceRender,
     },
     async execute(args, exec) {
+      if (!deps.modalityEnabled('video')) {
+        throw new Error('media-lens: video evidence wrapping is disabled by the modality switch in the plugin settings (modalities.video = false)')
+      }
       const req = await buildLensRequest(args, 'video', exec.agent?.session?.header?.cwd)
       log(`media_read_video ${basename(req.path)} budget=${req.budget}`)
       const refine = deps.refineFn?.()

@@ -11,6 +11,7 @@ export const EXTENSIONS: Record<MediaKind, ReadonlySet<string>> = {
   video: new Set(['.mp4', '.webm', '.mov', '.mkv']),
   audio: new Set(['.wav', '.mp3', '.m4a', '.flac', '.ogg', '.opus', '.aac', '.wma']),
   image: new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']),
+  pdf: new Set(['.pdf']),
 }
 
 export interface GuardedPath {
@@ -44,6 +45,9 @@ const SNIFFERS: Record<MediaKind, Array<{ mime: string; test: (b: Buffer) => boo
     { mime: 'audio/mp4', test: (b) => b.length >= 8 && b.toString('ascii', 4, 8) === 'ftyp' },
     { mime: 'audio/aac', test: (b) => b.length >= 2 && b[0] === 0xff && (b[1] === 0xf1 || b[1] === 0xf9) },
     { mime: 'audio/x-ms-wma', test: (b) => b.length >= 16 && b.toString('hex', 0, 16) === '3026b2758e66cf11a6d900aa0062ce6c' },
+  ],
+  pdf: [
+    { mime: 'application/pdf', test: (b) => b.length >= 5 && b.toString('ascii', 0, 5) === '%PDF-' },
   ],
 }
 

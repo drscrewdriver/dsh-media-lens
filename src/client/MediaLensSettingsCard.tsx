@@ -105,19 +105,19 @@ export function MediaLensSettingsCard({ scope, t }: LensCardProps) {
   const editable = snap.status === 'ready' && (snap.writable ?? false)
 
   // 已注册模型候选（宿主 /api/dsh-media-lens/models）；拉不到则只留 'auto'，字段仍为自由文本框。
-  const [candidates, setCandidates] = useState<{ image: string[]; audio: string[]; video: string[] }>({
-    image: ['auto'], audio: ['auto'], video: ['auto'],
+  const [candidates, setCandidates] = useState<{ image: string[]; audio: string[]; video: string[]; pdf: string[] }>({
+    image: ['auto'], audio: ['auto'], video: ['auto'], pdf: ['auto'],
   })
   useEffect(() => {
     let alive = true
     fetch('/api/dsh-media-lens/models', { headers: { accept: 'application/json' } })
       .then((r) => (r.ok ? r.json() : null))
-      .then((j: { groups?: { image?: Array<{ value?: string }>; audio?: Array<{ value?: string }>; video?: Array<{ value?: string }> }; all?: Array<{ value?: string }> } | null) => {
+      .then((j: { groups?: { image?: Array<{ value?: string }>; audio?: Array<{ value?: string }>; video?: Array<{ value?: string }>; pdf?: Array<{ value?: string }> }; all?: Array<{ value?: string }> } | null) => {
         if (!alive || j?.groups === undefined) return
         const uniq = (arr: string[]): string[] => Array.from(new Set(arr.filter((v) => v !== '')))
         const allVals = (j.all ?? []).map((m) => m.value ?? '')
         const mk = (arr?: Array<{ value?: string }>): string[] => ['auto', ...uniq([...(arr ?? []).map((m) => m.value ?? ''), ...allVals])]
-        setCandidates({ image: mk(j.groups.image), audio: mk(j.groups.audio), video: mk(j.groups.video) })
+        setCandidates({ image: mk(j.groups.image), audio: mk(j.groups.audio), video: mk(j.groups.video), pdf: mk(j.groups.pdf) })
       })
       .catch(() => { /* 无路由/失败：保持纯文本框 */ })
     return () => { alive = false }
@@ -147,10 +147,17 @@ export function MediaLensSettingsCard({ scope, t }: LensCardProps) {
       <div style={heading}>{t('modelsTitle')}</div>
       <div style={hint}>{t('modelsHint')}</div>
       <div style={grid}>
-        <BufferedText label={t('image')} value={value.models.image} disabled={!editable} listId="mlens-models-image" options={candidates.image} onCommit={(v) => patch((d) => { d.models.image = v })} />
-        <BufferedText label={t('audio')} value={value.models.audio} disabled={!editable} listId="mlens-models-audio" options={candidates.audio} onCommit={(v) => patch((d) => { d.models.audio = v })} />
-        <BufferedText label={t('video')} value={value.models.video} disabled={!editable} listId="mlens-models-video" options={candidates.video} onCommit={(v) => patch((d) => { d.models.video = v })} />
+        <BufferedText label={t('image')} value={value.models.image ?? 'auto'} disabled={!editable} listId="mlens-models-image" options={candidates.image} onCommit={(v) => patch((d) => { d.models.image = v })} />
+        <BufferedText label={t('audio')} value={value.models.audio ?? 'auto'} disabled={!editable} listId="mlens-models-audio" options={candidates.audio} onCommit={(v) => patch((d) => { d.models.audio = v })} />
+        <BufferedText label={t('video')} value={value.models.video ?? 'auto'} disabled={!editable} listId="mlens-models-video" options={candidates.video} onCommit={(v) => patch((d) => { d.models.video = v })} />
+        <BufferedText label={t('pdf')} value={value.models.pdf ?? 'auto'} disabled={!editable} listId="mlens-models-pdf" options={candidates.pdf} onCommit={(v) => patch((d) => { d.models.pdf = v })} />
       </div>
+
+      <div style={heading}>{t('modalitiesTitle')}</div>
+      <div style={hint}>{t('modalitiesHint')}</div>
+      <Check label={t('wrapPdf')} value={value.modalities?.pdf !== false} disabled={!editable} onCommit={(v) => patch((d) => { d.modalities.pdf = v })} />
+      <Check label={t('wrapVideo')} value={value.modalities?.video !== false} disabled={!editable} onCommit={(v) => patch((d) => { d.modalities.video = v })} />
+      <Check label={t('wrapAudio')} value={value.modalities?.audio !== false} disabled={!editable} onCommit={(v) => patch((d) => { d.modalities.audio = v })} />
 
       <div style={heading}>{t('openaiTitle')}</div>
       <BufferedText label={t('baseUrl')} value={value.providers.openai.baseUrl} disabled={!editable} placeholder="https://api.example.com/v1" onCommit={(v) => patch((d) => { d.providers.openai.baseUrl = v })} />

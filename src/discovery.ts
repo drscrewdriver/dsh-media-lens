@@ -39,7 +39,7 @@ export interface DiscoverySnapshot {
 export const EMPTY_SNAPSHOT: DiscoverySnapshot = {
   available: false,
   models: [],
-  groups: { image: [], audio: [], video: [] },
+  groups: { image: [], audio: [], video: [], pdf: [] },
 }
 
 const PROVIDER_SCAN_LIMIT = 32
@@ -50,11 +50,12 @@ function modalityList(raw: unknown): string[] {
 }
 
 function groupByKind(models: DiscoveredModel[]): Record<MediaKind, DiscoveredModel[]> {
-  const groups: Record<MediaKind, DiscoveredModel[]> = { image: [], audio: [], video: [] }
+  const groups: Record<MediaKind, DiscoveredModel[]> = { image: [], audio: [], video: [], pdf: [] }
   for (const model of models) {
     if (model.modalities.includes('image')) groups.image.push(model)
     if (model.modalities.includes('audio')) groups.audio.push(model)
     if (model.modalities.includes('video')) groups.video.push(model)
+    if (model.modalities.includes('pdf')) groups.pdf.push(model)
   }
   return groups
 }

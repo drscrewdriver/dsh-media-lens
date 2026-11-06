@@ -4,7 +4,7 @@
  * MediaEvidence 并追加 attempts —— 降级绝不静默（meta.attempts 必带）。
  */
 
-export type MediaKind = 'video' | 'audio' | 'image'
+export type MediaKind = 'video' | 'audio' | 'image' | 'pdf'
 
 export interface Attempt {
   provider: string
@@ -107,8 +107,8 @@ function isFiniteNumber(v: unknown): v is number {
 export function validateEvidence(value: unknown): string | null {
   if (typeof value !== 'object' || value === null) return 'evidence: not an object'
   const v = value as Record<string, unknown>
-  if (v['kind'] !== 'video' && v['kind'] !== 'audio' && v['kind'] !== 'image') {
-    return 'evidence.kind: must be video | audio | image'
+  if (v['kind'] !== 'video' && v['kind'] !== 'audio' && v['kind'] !== 'image' && v['kind'] !== 'pdf') {
+    return 'evidence.kind: must be video | audio | image | pdf'
   }
   const source = v['source']
   if (typeof source !== 'object' || source === null) return 'evidence.source: missing'

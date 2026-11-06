@@ -25,6 +25,12 @@ export interface LensDeps {
   asrEndpoints: () => { name: string; command: string }[]
   strictLocalOnly: () => boolean
   /**
+   * 取证授权开关（pdf/video/audio 各一档）：false = 该媒体的证据包裹整体拒绝
+   * （工具层与 vision-bridge 都读这一面）——未授权即不处理，媒体不出本机一步。
+   * image 无开关（三开关授权面只覆盖远端承载的 pdf/video/audio）。
+   */
+  modalityEnabled: (kind: MediaKind) => boolean
+  /**
    * Phase 7（FR-15/16）：链出口 refine hook 工厂——未启用时返回 undefined，
    * runChain 行为与 Phase 6 逐字段一致；启用时工具层把它传入 runChain 选项。
    */
@@ -169,9 +175,20 @@ export function buildVideoChain(deps: LensDeps, budget: LensRequest['budget']): 
   return dropUnavailable(applyStrict(direct, deps.strictLocalOnly())).concat(local)
 }
 
+/**
+ * pdf 链：multimodal 直传（file 块 → 注册模型原生读，openai-completions 接管线
+ * 把它序列化成 OpenAI `file` part）→ local:metadata。没有抽帧/ASR 的等价物：
+ * 直传不可用即证据不可得，落 probe 元数据兜底。
+ */
+export function buildPdfChain(deps: LensDeps): Provider[] {
+  const multimodal = createMultimodalProvider(deps.registered, 'pdf')
+  return dropUnavailable(applyStrict([multimodal], deps.strictLocalOnly())).concat(createLocalFileProvider())
+}
+
 export function chainForMedia(deps: LensDeps, media: MediaKind, budget: LensRequest['budget']): Provider[] {
   if (media === 'image') return buildImageChain(deps)
   if (media === 'audio') return buildAudioChain(deps)
+  if (media === 'pdf') return buildPdfChain(deps)
   return buildVideoChain(deps, budget)
 }
 

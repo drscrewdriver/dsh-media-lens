@@ -1,5 +1,9 @@
 # Changelog
 
+0.3.0: PDF 直读 + 取证授权开关。新增 `media_read_pdf` 工具（PDF file 块直传注册模型，openai-completions 接管线按 extraInputs 的 `pdf` 声明放行，输出版面 regions 证据；无可用模型落 probe 元数据兜底）；设置新增 `models.pdf` 处理端选择与 `modalities.{pdf,video,audio}` 三个取证授权开关（false = 该类媒体整体拒绝处理，工具响亮报错、vision-bridge 不改写；默认全开 = 行为不变）。能力发现同步 `pdf` 模态分组（extraInputs 声明的模型经 discovery 自动进 pdf 组候选）。
+
+## 0.1.0 (2026-10-06)
+
 0.2.2: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
 
 ## 0.1.0 (2026-10-06)

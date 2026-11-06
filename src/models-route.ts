@@ -30,7 +30,7 @@ function serialize(snapshot: DiscoverySnapshot): unknown {
   return {
     ok: true,
     available: snapshot.available,
-    groups: { image: pick(snapshot.groups.image), audio: pick(snapshot.groups.audio), video: pick(snapshot.groups.video) },
+    groups: { image: pick(snapshot.groups.image), audio: pick(snapshot.groups.audio), video: pick(snapshot.groups.video), pdf: pick(snapshot.groups.pdf) },
     // 全部已注册模型：宿主元数据常不声明 inputModalities（模态组多为空），
     // 而显式 `provider/model` 选择本就被尊重，故候选集以全量为主。
     all: pick(snapshot.models),

@@ -18,8 +18,8 @@ function providerNameFor(selection: ModelSelection): string {
   return `multimodal:${selection.provider}/${selection.model}`
 }
 
-/** 音/视频直传 provider 工厂（M20：audio 链 multimodal → asr-shell；video full/reencode 直传首选）。 */
-export function createMultimodalProvider(deps: RegisteredDeps, kind: Extract<MediaKind, 'audio' | 'video'>): Provider {
+/** 直传 provider 工厂（M20：audio 链 multimodal → asr-shell；video full/reencode 直传首选；pdf 唯一直传路）。 */
+export function createMultimodalProvider(deps: RegisteredDeps, kind: Extract<MediaKind, 'audio' | 'video' | 'pdf'>): Provider {
   return {
     name: 'multimodal:auto',
     media: [kind],

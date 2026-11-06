@@ -257,6 +257,7 @@ function makeDeps(llm: unknown, attachments: unknown): LensDeps {
     vlConfig: () => ({ baseUrl: '', apiKey: '', model: '', structuredOutput: false }),
     asrEndpoints: () => [],
     strictLocalOnly: () => false,
+    modalityEnabled: () => true,
   }
 }
 
@@ -458,6 +459,7 @@ describe('filterDiscoverySnapshot（vision-bridge 自排除）', () => {
         image: [{ provider: 'media-lens-vision-deepseek-official', id: 'glm-5-air', name: 'Air', modalities: ['image'] }],
         audio: [],
         video: [],
+      pdf: [],
       },
     }
     const filtered = filterDiscoverySnapshot(snapshot, (model) => !model.provider.startsWith(OWN_PROVIDER_PREFIX))

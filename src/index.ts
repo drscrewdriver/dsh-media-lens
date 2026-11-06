@@ -26,6 +26,7 @@ import type { LensDeps } from './tools/chains.ts'
 import { createReadImageTool } from './tools/read-image.ts'
 import { createReadAudioTool } from './tools/read-audio.ts'
 import { createReadVideoTool } from './tools/read-video.ts'
+import { createReadPdfTool } from './tools/read-pdf.ts'
 
 export const name = 'dsh-media-lens'
 
@@ -36,6 +37,13 @@ export const Config = z.object({
     image: z.string().default('auto'),
     audio: z.string().default('auto'),
     video: z.string().default('auto'),
+    pdf: z.string().default('auto'),
+  }).volatile(),
+  // 取证授权开关（pdf/video/audio 各一档，默认全开 = 维持既有行为）。
+  modalities: z.object({
+    pdf: z.boolean().default(true),
+    video: z.boolean().default(true),
+    audio: z.boolean().default(true),
   }).volatile(),
   providers: z.object({
     openai: z.object({
@@ -97,7 +105,7 @@ export function apply(ctx: Context, config: MediaLensConfigInput = {}): void {
 
   // discovery 快照：apply 时即起一次后台枚举，此后 TTL 内复用缓存；llm 缺失 →
   // available:false（软读降级），链回落自配端点。枚举未完成的首批调用走空快照。
-  const emptySnapshot = (): DiscoverySnapshot => ({ available: llm !== undefined, models: [], groups: { image: [], audio: [], video: [] } })
+  const emptySnapshot = (): DiscoverySnapshot => ({ available: llm !== undefined, models: [], groups: { image: [], audio: [], video: [], pdf: [] } })
   let cached: { snapshot: DiscoverySnapshot; at: number } | undefined
   const refresh = (): void => {
     if (llm === undefined) return
@@ -137,6 +145,9 @@ export function apply(ctx: Context, config: MediaLensConfigInput = {}): void {
       return endpoints.map((command, index) => ({ name: `endpoint-${index + 1}`, command }))
     },
     strictLocalOnly: () => resolved.strictLocalOnly,
+    // 取证授权开关：pdf/video/audio 各一档（image 无开关）。volatile 活读，
+    // 拨档即时生效（工具执行期与 vision-bridge 改写期都读这一面）。
+    modalityEnabled: (kind) => resolved.modalities[kind as 'pdf' | 'video' | 'audio'] !== false,
     // Phase 7 + refine-source-gate：refine hook 工厂——enabled 且 model 非空且
     // configured 端点（providers.openai）在位才给闭包；其余情形（含 auto/空串、
     // 未自配端点）返回 undefined，行为退到 Phase 6 逐字段一致。
@@ -166,6 +177,7 @@ export function apply(ctx: Context, config: MediaLensConfigInput = {}): void {
   register(createReadVideoTool(deps, gate, log))
   register(createReadAudioTool(deps, gate, log))
   register(createReadImageTool(deps, gate, log))
+  register(createReadPdfTool(deps, gate, log))
 
   // vision-bridge (v4)：默认关。开启且 llm 在位时注册包装 provider
   //（`media-lens-vision-<upstream>`，选择器出现 `(media-lens vision)` 条目）。

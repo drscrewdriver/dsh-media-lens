@@ -195,11 +195,12 @@ const KIND_EXTENSIONS: Readonly<Record<MediaKind, readonly string[]>> = {
   video: ['.mp4', '.webm', '.mov', '.mkv'],
   audio: ['.wav', '.mp3', '.m4a', '.flac', '.ogg', '.opus', '.aac', '.wma'],
   image: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'],
+  pdf: ['.pdf'],
 }
 
 const EXTENSION_KINDS: ReadonlyMap<string, MediaKind> = (() => {
   const map = new Map<string, MediaKind>()
-  for (const kind of ['video', 'audio', 'image'] as const) {
+  for (const kind of ['video', 'audio', 'image', 'pdf'] as const) {
     for (const ext of KIND_EXTENSIONS[kind]) map.set(ext, kind)
   }
   return map
@@ -318,6 +319,11 @@ export function createVisionBridge(input: VisionBridgeInput): VisionBridge {
   /* ---- 单块媒体 → 证据文本（缓存 + 常量占位） ---- */
 
   const readMediaPath = async (path: string, kind: MediaKind, signal: AbortSignal | undefined): Promise<string> => {
+    // 取证授权开关（pdf/video/audio）：未授权该媒体的证据包裹 → 不读链，
+    // 占位文本如实告知（不静默当作已读，也不把媒体送进任何处理端）。
+    if (!input.deps.modalityEnabled(kind)) {
+      return `[media-lens vision] ${kind} evidence wrapping is disabled by the plugin's modality switch. Tell the user this media was not read this turn.`
+    }
     const req = await buildLensRequest({ path }, kind, undefined)
     const evidence = await runChain(chainForMedia(input.deps, kind, req.budget), req, {
       gate: input.gate,

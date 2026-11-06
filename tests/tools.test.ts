@@ -112,12 +112,13 @@ describe('工具注册面（task_23 契约）', () => {
       registered: {
         llm: {} as never,
         attachments: {} as never,
-        snapshot: () => ({ available: false, models: [], groups: { image: [], audio: [], video: [] } }),
+        snapshot: () => ({ available: false, models: [], groups: { image: [], audio: [], video: [], pdf: [] } }),
         selectionFor: () => 'auto',
       },
       vlConfig: () => ({ baseUrl: 'https://vl.example', apiKey: 'k', model: 'm' }),
       asrEndpoints: () => [],
       strictLocalOnly: () => false,
+      modalityEnabled: () => true,
     }
     const gate = { record: noop, isOpen: () => true } as never
     const image = createReadImageTool(deps, gate, noop)

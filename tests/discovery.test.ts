@@ -62,6 +62,7 @@ describe('resolveSelection（M19 前置）', () => {
       image: [{ provider: 'p1', id: 'vision', name: 'v', modalities: ['image'] }],
       audio: [],
       video: [],
+      pdf: [],
     },
   }
 
@@ -114,7 +115,7 @@ describe('config（M17/M18 配置面）', () => {
 })
 
 /** 全可用的假 deps（链序断言面）。 */
-function fakeDeps(overrides: Partial<Pick<LensDeps, 'asrEndpoints' | 'strictLocalOnly'>> = {}): LensDeps {
+function fakeDeps(overrides: Partial<Pick<LensDeps, 'asrEndpoints' | 'strictLocalOnly' | 'modalityEnabled'>> = {}): LensDeps {
   const llm = { listProviders: () => [], listModels: async () => [] } as unknown as LlmRuntime
   const attachments = { saveImage: async () => ({}), saveFile: async () => ({}) } as unknown as AttachmentStore
   const registered: RegisteredDeps = {
@@ -127,6 +128,7 @@ function fakeDeps(overrides: Partial<Pick<LensDeps, 'asrEndpoints' | 'strictLoca
         image: [{ provider: 'p1', id: 'vision', name: 'v', modalities: ['image'] }],
         audio: [{ provider: 'p1', id: 'omni', name: 'o', modalities: ['audio', 'video'] }],
         video: [{ provider: 'p1', id: 'omni', name: 'o', modalities: ['audio', 'video'] }],
+        pdf: [],
       },
     }),
     selectionFor: () => 'auto',
@@ -136,6 +138,7 @@ function fakeDeps(overrides: Partial<Pick<LensDeps, 'asrEndpoints' | 'strictLoca
     vlConfig: () => ({ baseUrl: 'https://vl.example', apiKey: 'k', model: 'vl-1' }),
     asrEndpoints: overrides.asrEndpoints ?? (() => [{ name: 'endpoint-1', command: 'python asr.py --input {input}' }]),
     strictLocalOnly: overrides.strictLocalOnly ?? (() => false),
+    modalityEnabled: overrides.modalityEnabled ?? (() => true),
   }
 }
 
@@ -206,7 +209,7 @@ describe('链构建（M18/M20/M8）', () => {
     const deps = fakeDeps()
     deps.registered = {
       ...deps.registered,
-      snapshot: () => ({ available: true, models: [], groups: { image: [], audio: [], video: [] } }),
+      snapshot: () => ({ available: true, models: [], groups: { image: [], audio: [], video: [], pdf: [] } }),
     }
     expect(buildImageChain(deps).map((p) => p.name)).toEqual(['configured:openai', 'local:metadata'])
     expect(buildAudioChain(deps).map((p) => p.name)).toEqual(['asr:endpoint-1', 'local:metadata'])

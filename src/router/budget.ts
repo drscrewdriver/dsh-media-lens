@@ -19,6 +19,14 @@ export const AUDIO_SEGMENT_SEC = 30 * 60
 /** 图片送视觉端点的软上限：超过则先降采样。 */
 export const IMAGE_SOFT_BYTES = 8 * 1024 * 1024
 
+/**
+ * PDF 恒为 full（file 块直传一条路，没有抽帧/降采样的等价物）：超限由处理端
+ * 模态硬闸响亮拒绝，链落到 local:metadata —— 不静默截断文档。
+ */
+export function decidePdf(): BudgetDecision {
+  return 'full'
+}
+
 export function decideVideo(sizeBytes: number, durationSec: number | undefined): BudgetDecision {
   if (durationSec !== undefined && durationSec > VIDEO_MAX_SEC) return 'sampleFrames'
   if (sizeBytes > VIDEO_HARD_BYTES) return 'sampleFrames'
@@ -39,5 +47,6 @@ export function decideImage(sizeBytes: number): BudgetDecision {
 export function decideBudget(media: MediaKind, sizeBytes: number, durationSec: number | undefined): BudgetDecision {
   if (media === 'video') return decideVideo(sizeBytes, durationSec)
   if (media === 'audio') return decideAudio(durationSec)
+  if (media === 'pdf') return decidePdf()
   return decideImage(sizeBytes)
 }

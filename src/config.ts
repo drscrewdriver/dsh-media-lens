@@ -18,6 +18,17 @@ export interface MediaLensConfig {
     image: string
     audio: string
     video: string
+    pdf: string
+  }
+  /**
+   * 取证授权开关（pdf/video/audio 各一档，默认全开 = 维持既有行为）：
+   * false = 该媒体的证据包裹整体拒绝——工具响亮报错、vision-bridge 不改写，
+   * 媒体内容不进任何处理链（连 local:metadata 也不走）。image 无开关。
+   */
+  modalities: {
+    pdf: boolean
+    video: boolean
+    audio: boolean
   }
   providers: {
     /** OpenAI-compatible 视觉端点（注册模型缺失/失败时的回退）。 */
@@ -62,7 +73,8 @@ export interface MediaLensConfig {
 export const DEFAULT_CONFIG: Required<MediaLensConfig> = {
   strictLocalOnly: false,
   cooldownMs: 600_000,
-  models: { image: 'auto', audio: 'auto', video: 'auto' },
+  models: { image: 'auto', audio: 'auto', video: 'auto', pdf: 'auto' },
+  modalities: { pdf: true, video: true, audio: true },
   providers: {
     openai: { baseUrl: '', apiKey: '', model: '', structuredOutput: false },
     asr: { command: '', endpoints: [] },
@@ -76,6 +88,7 @@ export interface MediaLensConfigInput {
   strictLocalOnly?: boolean
   cooldownMs?: number
   models?: Partial<MediaLensConfig['models']>
+  modalities?: Partial<MediaLensConfig['modalities']>
   providers?: {
     openai?: Partial<MediaLensConfig['providers']['openai']>
     asr?: Partial<MediaLensConfig['providers']['asr']>
@@ -104,6 +117,7 @@ export function detachConfigCells<T>(value: T): T {
 export function resolveConfig(partial: MediaLensConfigInput | undefined): Required<MediaLensConfig> {
   const p = detachConfigCells(partial ?? {})
   const models = { ...DEFAULT_CONFIG.models, ...(p.models ?? {}) }
+  const modalities = { ...DEFAULT_CONFIG.modalities, ...(p.modalities ?? {}) }
   const openai = { ...DEFAULT_CONFIG.providers.openai, ...(p.providers?.openai ?? {}) }
   const asr = { ...DEFAULT_CONFIG.providers.asr, ...(p.providers?.asr ?? {}) }
   const refine = { ...DEFAULT_CONFIG.refine, ...(p.refine ?? {}) }
@@ -117,6 +131,13 @@ export function resolveConfig(partial: MediaLensConfigInput | undefined): Requir
       image: models.image ?? DEFAULT_CONFIG.models.image,
       audio: models.audio ?? DEFAULT_CONFIG.models.audio,
       video: models.video ?? DEFAULT_CONFIG.models.video,
+      pdf: models.pdf ?? DEFAULT_CONFIG.models.pdf,
+    },
+    modalities: {
+      // 开关只认显式 false（老配置无此字段 = 全授权，行为不变）。
+      pdf: modalities.pdf !== false,
+      video: modalities.video !== false,
+      audio: modalities.audio !== false,
     },
     providers: {
       openai: {

@@ -30,6 +30,9 @@ export function createReadAudioTool(deps: LensDeps, gate: CooldownGate, log: (m:
       render: evidenceRender,
     },
     async execute(args, exec) {
+      if (!deps.modalityEnabled('audio')) {
+        throw new Error('media-lens: audio evidence wrapping is disabled by the modality switch in the plugin settings (modalities.audio = false)')
+      }
       const req = await buildLensRequest(args, 'audio', exec.agent?.session?.header?.cwd)
       log(`media_read_audio ${basename(req.path)} budget=${req.budget}`)
       const refine = deps.refineFn?.()
