@@ -133,6 +133,6 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public",
-    "tag": "dsh-0.2.0"
+    "tag": "latest"
   }
 }
