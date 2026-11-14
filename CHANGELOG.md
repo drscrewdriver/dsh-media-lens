@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3
+
+- 终端面（dsh-tui / Desktop 命令面板同源）：/media 只读设置节面（status）。
+
 ## 0.3.1 (2026-11-14)
 
 宿主声明改有界区间（版本上下限改造）：两处 `engines.dsh`（`package.json` / `dsh.plugin.json`）
