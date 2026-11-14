@@ -4,7 +4,7 @@
   "main": "./lib/index.js",
   "description": "Media evidence lens + provider router for DeepSeek Harness (media_read_video / media_read_audio / media_read_image).",
   "engines": {
-    "dsh": ">=0.1.7-rc.1 <0.3.0"
+    "dsh": ">=0.1.7-rc.1 <0.3.0-0"
   },
   "contributes": {
     "tools": [],

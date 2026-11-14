@@ -32,7 +32,9 @@ export const supportedHosts = Object.freeze([
 ])
 
 /** peerDependencies 共用的枚举串（精确枚举无暗坑）。 */
-export const peerRange = supportedHosts.join(' || ')
+export const peerRange = `>=${supportedHosts[0]} <0.3.0-0`
+/** 已实测宿主细胞：仅供 README 展示 / 矩阵脚本，不再下发给 peer。 */
+export const hostCells = supportedHosts.join(' || ')
 
 /**
  * engines.dsh 的有界区间（2026-11-14 版本上下限改造，用户裁定，与
@@ -41,7 +43,7 @@ export const peerRange = supportedHosts.join(' || ')
  * `includePrerelease: true`，区间能覆盖 0.1.7～0.2.x 全部 rc；而 npm/pnpm 解析不带
  * 该旗标，故 peerDependencies 仍必须逐 rc 枚举。
  */
-export const enginesRange = `>=${supportedHosts[0]} <0.3.0`
+export const enginesRange = peerRange
 
 /** 本地开发基线（devDependencies 引入的宿主包一律钉这里）。 */
 export const developmentHost = '0.2.1-rc.5'
