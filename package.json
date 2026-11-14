@@ -1,6 +1,6 @@
 {
   "name": "dsh-media-lens",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Media evidence lens + provider router for DeepSeek Harness: media_read_video / media_read_audio / media_read_image turn local media into structured evidence (timeline / transcript / regions) via host-registered multimodal models first, configured OpenAI-compatible endpoints second, and local ffmpeg/CLI fallbacks last. Every fallback is recorded in meta.attempts — a fallback is never silent.",
   "type": "module",
   "license": "MIT",
@@ -116,7 +116,7 @@
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
-    "dsh": "0.1.7-rc.1 || 0.1.7-rc.2 || 0.2.0-rc.1 || 0.2.0-rc.2 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1"
+    "dsh": ">=0.1.7-rc.1 <0.3.0"
   },
   "keywords": [
     "deepseek-harness",

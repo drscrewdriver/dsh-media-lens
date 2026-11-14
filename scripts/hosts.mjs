@@ -7,9 +7,9 @@
  * （tarball diff + npm 在位，如实记录档位）→ farm 逐格 add+smoke 转绿 → 发版。
  * farm 实测账本在 .compat-results/verified.json，与本枚举分属两档（声明 vs 实测）。
  * 本数组与由它生成的声明（package.json peerDependencies / package.json
- * engines.dsh / dsh.plugin.json engines.dsh）**禁止手改**——0.2.1-alpha.4 起装载
- * 闸门把 engines.dsh 当独立且优先的拒载判据（peers 被忽略），故 engines.dsh 与
- * 全部 dsh-* peer 必须携带同一份精确枚举串，禁止宽区间 / caret 代替。
+ * engines.dsh / dsh.plugin.json engines.dsh）**禁止手改**。声明形状（2026-11-14
+ * 版本上下限改造后）：engines.dsh = {@link enginesRange} 有界区间，全部 dsh-* peer
+ * 保持逐 rc 枚举（包管理器解析面不带 includePrerelease）。
  */
 
 /** 全部声明支持的宿主 rc（冻结；新增只在此处追加，逐 rc 单列）。 */
@@ -31,8 +31,17 @@ export const supportedHosts = Object.freeze([
   '0.2.2-rc.1',
 ])
 
-/** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑）。 */
+/** peerDependencies 共用的枚举串（精确枚举无暗坑）。 */
 export const peerRange = supportedHosts.join(' || ')
+
+/**
+ * engines.dsh 的有界区间（2026-11-14 版本上下限改造，用户裁定，与
+ * dsh-date-wrapper / dsh-cookie-cleaner 批次同口径）：下限＝{@link supportedHosts}
+ * 起点（0.1.7-rc.1，不硬编码），上限 `<0.3.0`。宿主侧判定带
+ * `includePrerelease: true`，区间能覆盖 0.1.7～0.2.x 全部 rc；而 npm/pnpm 解析不带
+ * 该旗标，故 peerDependencies 仍必须逐 rc 枚举。
+ */
+export const enginesRange = `>=${supportedHosts[0]} <0.3.0`
 
 /** 本地开发基线（devDependencies 引入的宿主包一律钉这里）。 */
 export const developmentHost = '0.2.1-rc.5'
