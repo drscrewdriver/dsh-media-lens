@@ -76,6 +76,18 @@ interface ToolsFace {
 const DISCOVERY_TTL_MS = 60_000
 
 export function apply(ctx: Context, config: MediaLensConfigInput = {}): void {
+  // ── dsh-tui 终端面：`/media` ────────────────────────────────────
+  // TUI 不加载设置卡/图片卡，终端本身不可视媒体 → 至少要让“路由配没配”可查。
+  // 命令层只读设置节；每次工具调用的回退链仍在结果 meta.attempts 里。
+  ;(ctx as unknown as {
+    inject?: (deps: string[], cb: (scope: Context) => void) => void
+  }).inject?.(['commands'], (scope) => {
+    registerMediaCommand(scope, {
+      ns: 'dsh-media-lens',
+      section: () => describeSection(scope, 'dsh-media-lens'),
+      lastAttempts: () => [],
+    })
+  })
   // volatile 活读：宿主对 `.volatile()` 字段传带 `.get()` 的活引用，且写入后只发
   // `loader/volatile-update` 事件、不重跑 apply（llm-pi-ai / llm-deepseek 同范式）。
   // resolved 必须可整体重算——下方闭包全部在调用期解引用 `resolved`，重算即热生效。
@@ -228,3 +240,4 @@ export { refineEvidence, EVIDENCE_REFINE_INSTRUCTION } from './refine.ts'
 export type { RefineDeps } from './refine.ts'
 export { createVisionBridge, shouldWrapModel, evidenceBridgeText, fileHandlePath, rewriteMessages, EvidenceMemo, BRIDGE_FAILURES, OWN_PROVIDER_PREFIX, VISION_MODEL_SUFFIX } from './inject.ts'
 export type { VisionBridge, VisionBridgeInput } from './inject.ts'
+import { registerMediaCommand, describeSection } from './tui-command.ts'
