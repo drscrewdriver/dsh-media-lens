@@ -70,19 +70,34 @@ const SECTION_ORDER = 24
 // 仿 guard/steward 的 yield 语义，消除「contributor 工厂先于 owner 落账」的 fire 时序竞态。
 const FAMILY_YIELD_MS = 1000
 
+/**
+ * Host locale APIs throw on duplicate writes: `addLanguage` when the global
+ * catalog already has the id (`... is already registered`), and `register` when
+ * the namespace already carries that locale (`... already has locale "..."`).
+ * Both mean the entry is already present and usable, so they are benign skips
+ * (multi-mount or `_reload` re-running apply), not real failures — never warn.
+ */
+function isBenignLocaleDuplicate(error: unknown): boolean {
+  return error instanceof Error && /already (?:registered|has locale)/.test(error.message)
+}
+
 export function apply(ctx: ClientContext): void {
   // locale：zh|en 内建用双参 register；其余 7 语走单 locale 重载 + addLanguage 才可选。
   try {
     ctx.locale.register(NS, { zh, en })
   } catch (error) {
-    console.warn('[dsh-media-lens] locale zh/en 已注册，跳过:', error)
+    if (!isBenignLocaleDuplicate(error)) console.warn('[dsh-media-lens] locale zh/en register failed:', error)
   }
   for (const language of extraLanguages) {
     try {
       ctx.locale.register(NS, language.id, language.dict)
+    } catch (error) {
+      if (!isBenignLocaleDuplicate(error)) console.warn(`[dsh-media-lens] locale "${language.id}" dictionary registration failed:`, error)
+    }
+    try {
       ctx.locale.addLanguage({ id: language.id, label: language.label, fallback: 'en' })
     } catch (error) {
-      console.warn(`[dsh-media-lens] locale "${language.id}" 注册失败，跳过:`, error)
+      if (!isBenignLocaleDuplicate(error)) console.warn(`[dsh-media-lens] locale "${language.id}" language registration failed:`, error)
     }
   }
   const tNav = ctx.locale.bind(NS)
