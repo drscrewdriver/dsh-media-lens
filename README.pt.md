@@ -31,7 +31,7 @@ media_read_video / media_read_audio / media_read_image
 ## Origem dos modelos de processamento (FR-9: modelo registrado tem prioridade)
 
 - **Modelos já registrados no host**: o plugin enumera via `ctx.llm.listProviders()/listModels()` (cache de 60s), agrupa por `inputModalities` e forma a cadeia preferida; imagens seguem direto como bloco image nativo.
-- **Seleção explícita**: configurar `models.{image,audio,video}: "provider/model"` especifica um modelo registrado —— a rota multimodal tipo MiMo do vídeo passa por aqui (o vocabulário de modalidades do host hoje só conhece `text|image` e não descobre declarações de vídeo/áudio; a seleção explícita é a única porta de entrada; quem承载 de fato é o portão rígido de modalidades do adaptador (p. ex. a tubulação takeover openai-completions), e a recusa é ruidosa).
+- **Seleção explícita**: configurar `models.{image,audio,video}: "provider/model"` especifica um modelo registrado —— a rota multimodal tipo MiMo do vídeo passa por aqui (o vocabulário de modalidades do host hoje só conhece `text|image` e não descobre declarações de vídeo/áudio; a seleção explícita é a única porta de entrada; quem transporta de fato é o portão rígido de modalidades do adaptador (p. ex. a tubulação takeover openai-completions), e a recusa é ruidosa).
 - **Endpoint próprio**: `providers.openai.{baseUrl, apiKey, model}`; apiKey aceita várias chaves separadas por vírgula (auth/429/quota trocam a chave; rede/5xx pulam para preservar a cadeia).
 - **Reserva local**: com strictLocalOnly ou a cadeia toda falhando, `local:metadata` emite só metadados da sonda (duração/resolução/tamanho), `degraded='local-metadata-only'`.
 
@@ -115,7 +115,7 @@ inject:
   families: ["deepseek", "glm", "mimo"]   # filtro por prefixo; "*" = todos (ainda sujeitos ao veto)
 ```
 
-**Critério do envoltório = envelopar quando a lente补 modalidade; omni jamais**:
+**Critério do envoltório = envelopar quando a lente completa a modalidade; omni jamais**:
 
 - Modelo de texto puro (tipo deepseek-v4.1) → envelopa: imagem + áudio/vídeo todos evidenceados;
 - Modelo de imagem (declara image, não omni) → envelopa: **blocos de imagem passam intactos** (preserva visão nativa), só áudio/vídeo viram evidência;
@@ -142,7 +142,7 @@ pnpm add ./dsh-media-lens --ignore-workspace-root-check   # ou npm pack e instal
 
 o media-lens em si faz «as ferramentas processam objetos multimodais» (media_read_video/audio/image). Para **registrar/autenticar modelos multimodais no host** e fazer o **envio direto de áudio/vídeo** ser realmente inline (em vez de só ver o texto handle do arquivo), dois plugins irmãos cooperam —— declarados peers `optional`: sem eles a capacidade correspondente degrada sozinha, sem erro:
 
-- **dsh-thinking-levels**: entrada de configuração/certificação de modelos e管理面 de reasoning_effort —— os modelos da cadeia de envio direto de áudio/vídeo são registrados aqui.
+- **dsh-thinking-levels**: entrada de configuração/certificação de modelos e face de gestão de reasoning_effort —— os modelos da cadeia de envio direto de áudio/vídeo são registrados aqui.
 - **dsh-llm-openai-completions**: takeover de transporte OpenAI-compatible —— serializa blocos file em video_url / input_audio e os envia de fato; em linhas sem takeover o host só projeta texto handle, e ao detectar isso o plugin cai na reserva de amostragem/ASR.
 
 A instalação segue o profile do host (autoInstallPeers:false + hoisted); os plugins irmãos se registram por seus próprios bundles, peers opcionais não puxam npm nem brigam com o portão de versões do host.
@@ -157,7 +157,7 @@ Este plugin é bundle de duas metades host+client (o `dsh.plugin.json.client.mai
 | Seção autônoma de reserva | `settings.section` | 24 | **auto-registra sem injection**: se o slot da família nunca foi renderizado (dono ausente/sem dono), este cartão aparece como seção autônoma, preservando a visibilidade |
 | Cartão de detalhes do bundle | `plugins.bundle.config` | — (keyed por nome de pacote) | cartão de configuração do gerenciador de plugins 0.1.7+ |
 
-Mecanismo lazy (as duas rotas de injeção se registram no topo da fase apply, e a fábrica só fire quando «evento declarado = painel de configuração aberto", fire na ordem de registro): o cartão de contribuição da família registra primeiro e, ao fire da sua fábrica, marca `familySeated`; a fábrica da seção autônoma lê a marca e se retira (sem expor duas vezes), sem a marca auto-registra a seção autônoma. **Registro após período de graça é proibido** (contraexemplo §3). Caminho de escrita: os campos de topo da configuração de cada条目 levam `.volatile()`, e o client escreve authoritative via `configForms.get(entryId).set(field, value)` com efeito a quente (única face de escrita viva em 0.1.7+/0.2.0/0.2.1; `settings.register` foi removido no 0.1.7+, a ponte webServer não serve de caminho de escrita).
+Mecanismo lazy (as duas rotas de injeção se registram no topo da fase apply, e a fábrica só fire quando «evento declarado = painel de configuração aberto», fire na ordem de registro): o cartão de contribuição da família registra primeiro e, ao fire da sua fábrica, marca `familySeated`; a fábrica da seção autônoma lê a marca e se retira (sem expor duas vezes), sem a marca auto-registra a seção autônoma. **Registro após período de graça é proibido** (contraexemplo §3). Caminho de escrita: os campos de topo da configuração de cada entrada levam `.volatile()`, e o client escreve authoritative via `configForms.get(entryId).set(field, value)` com efeito a quente (única face de escrita viva em 0.1.7+/0.2.0/0.2.1; `settings.register` foi removido no 0.1.7+, a ponte webServer não serve de caminho de escrita).
 
 ## Fronteira (YAGNI)
 
@@ -169,7 +169,7 @@ Tem as duas metades host+client e o cartão de configuração (subtab de famíli
 
 ## Face de terminal TUI (dsh-tui)
 
-O dsh-tui não carrega a metade client do plugin (painéis/cartões/página de configuração) nem alcança RPC própria do plugin; chamadas de ferramenta mostram só uma linha de resumo. A face legível e operável por humano que sobra são os comandos斜杠 do host. Convenção de saída: linha única ≤100 caracteres, ≤40 linhas no total, sem ANSI, alinhamento de dois espaços; escrita é dry-run por padrão, `--yes` executa; `--json` devolve JSON em linha única.
+O dsh-tui não carrega a metade client do plugin (painéis/cartões/página de configuração) nem alcança RPC própria do plugin; chamadas de ferramenta mostram só uma linha de resumo. A face legível e operável por humano que sobra são os comandos de barra do host. Convenção de saída: linha única ≤100 caracteres, ≤40 linhas no total, sem ANSI, alinhamento de dois espaços; escrita é dry-run por padrão, `--yes` executa; `--json` devolve JSON em linha única.
 
 | Comando | Função |
 |---|---|
