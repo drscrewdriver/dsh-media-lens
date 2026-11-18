@@ -1,5 +1,7 @@
 # dsh-media-lens
 
+[简体中文](README.md) | [Português](README.pt.md)
+
 媒体感知插件：把本地 video / audio / image 变成**结构化证据**（时间线 / 转写 / 版面区域）注入对话，让文本模型引用具体帧、秒、说话人 —— **Evidence, not imagination**。同时内置 provider 路由线：每个媒体一条 failover 链，预算超限自动降级，每次尝试记录在 `meta.attempts` —— **a fallback is never silent**。
 
 ```

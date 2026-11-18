@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.5
+
+- i18n: adiciona o locale português (pt-BR) — dicionário em tempo de execução, metadados do pacote e espelho README.
+
 ## 0.3.4
 
 - 修复多语言注册告警噪音：`addLanguage` 命中全局语言表"先到先得"、`register` 命中命名空间重复（`already registered` / `already has locale`）时改为良性跳过，不再刷"注册失败"红色告警；跨插件共用标准语码与本插件 `_reload` 均不再误报。

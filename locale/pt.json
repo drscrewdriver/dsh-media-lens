@@ -1,0 +1,1 @@
+{ "meta": { "title": "Lente de evidências de mídia", "description": "Converte mídia local (vídeo/áudio/imagem) em evidência estruturada por meio de uma cadeia de failover de providers; cada degradação é registrada." } }

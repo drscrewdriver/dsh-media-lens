@@ -1,6 +1,6 @@
 /**
- * media-lens 客户端 UI 字典（9 语：zh en ja ko fr de it ru es）。
- * zh 键集为真理源，其余 8 语用 Record<keyof typeof zh, string> 编译期对齐；
+ * media-lens 客户端 UI 字典（10 语：zh en ja ko fr de it ru es pt）。
+ * zh 键集为真理源，其余 9 语用 Record<keyof typeof zh, string> 编译期对齐；
  * 死文案（key 定义无人引用）视为漏渲染信号。NS 保持不变。
  */
 export const NS = 'dsh-media-lens'
@@ -403,7 +403,52 @@ export const es: Record<MediaLensKey, string> = {
   readonly: 'Este host no permite editar aquí; cámbialo en la página de ajustes.',
 }
 
-export const dictionaries: Record<string, Record<string, string>> = { zh, en, ja, ko, fr, de, it, ru, es }
+
+export const pt: Record<MediaLensKey, string> = {
+  nav: 'Lente de evidências de mídia',
+  familyTabLabel: 'Lente de evidências de mídia',
+  privacyTitle: 'Privacidade',
+  strictLocalOnly: 'Processar somente local',
+  strictLocalOnlyHint: 'Quando ativada, a cadeia remove todo provider remoto; o conteúdo de mídia nunca sai desta máquina.',
+  cooldownMs: 'Duração do cooldown (ms)',
+  modelsTitle: 'Modelos de processamento',
+  modelsHint: 'auto / vazio = descobrir automaticamente os modelos registrados; "provider/model" = especificação explícita.',
+  image: 'Imagem',
+  audio: 'Áudio',
+  video: 'Vídeo',
+  pdf: 'PDF',
+  modalitiesTitle: 'Autorização de evidência',
+  modalitiesHint: 'Autorize a extração de evidência por tipo de mídia: desligado = esse tipo é rejeitado por completo (não entra em cadeia alguma, não é enviado a modelo algum). image não tem interruptor, está sempre disponível.',
+  wrapPdf: 'Evidência de PDF',
+  wrapVideo: 'Evidência de vídeo',
+  wrapAudio: 'Evidência de áudio',
+  openaiTitle: 'Endpoint compatível com OpenAI',
+  baseUrl: 'Base URL',
+  apiKey: 'Chave de API (várias chaves separadas por vírgula, com rotação)',
+  model: 'Modelo',
+  structuredOutput: 'Saída estruturada (response_format json_schema)',
+  asrTitle: 'ASR local',
+  command: 'Modelo de comando de transcrição (placeholder {input})',
+  endpoints: 'Vários endpoints (tentados em ordem)',
+  addEndpoint: 'Adicionar endpoint',
+  removeEndpoint: 'Remover',
+  refineTitle: 'Refinamento na saída da cadeia',
+  refineEnabled: 'Ativar passada de refinamento',
+  refineModel: 'Modelo de refinamento ("provider/model")',
+  injectTitle: 'Ponte de visão',
+  injectEnabled: 'Envolver modelos no seletor',
+  injectEnabledHint: 'Adiciona entradas «<modelo> (media-lens vision)» ao seletor de modelos: imagens coladas e áudio/vídeo anexados passam primeiro pelo processador deste plugin como texto de evidência antes de o modelo original responder. Os modelos omni (p. ex. mimo-v2.6-flash) e os especializados em visão nunca são envolvidos.',
+  injectFamilies: 'Famílias a envolver (prefixos separados por vírgula, * = todas)',
+  injectFamiliesHint: 'Correspondência por prefixo de id ou nome do modelo; os modelos omni e especializados em visão são sempre excluídos.',
+  save: 'Salvar',
+  saving: 'Salvando…',
+  saved: 'Salvo',
+  error: 'Erro ao salvar',
+  loading: 'Carregando configurações…',
+  readonly: 'Este host não permite editar aqui; altere na página de configurações.',
+}
+
+export const dictionaries: Record<string, Record<string, string>> = { zh, en, ja, ko, fr, de, it, ru, es, pt }
 
 /** 非内建语言（宿主 BuiltInLocaleId 只有 zh|en）需 addLanguage 才可选。 */
 export const extraLanguages: ReadonlyArray<{ id: string; label: string; dict: Record<MediaLensKey, string> }> = [
@@ -414,4 +459,5 @@ export const extraLanguages: ReadonlyArray<{ id: string; label: string; dict: Re
   { id: 'it', label: 'Italiano', dict: it },
   { id: 'ru', label: 'Русский', dict: ru },
   { id: 'es', label: 'Español', dict: es },
+  { id: 'pt', label: 'Português', dict: pt },
 ]
