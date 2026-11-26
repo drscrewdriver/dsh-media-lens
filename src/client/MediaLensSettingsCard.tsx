@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import type { ChangeEvent, CSSProperties, KeyboardEvent } from 'react'
 import type { MediaLensConfig } from '../config.ts'
 import { DEFAULT_CONFIG } from '../config.ts'
+import { mountStarRow } from './star-row-copy.ts'
 
 /** 卡片消费的最小 scope 面（由 client/index.ts 的 configForms 臂提供）。 */
 export interface LensScope {
@@ -193,6 +194,9 @@ export function MediaLensSettingsCard({ scope, t }: LensCardProps) {
         onCommit={(v) => patch((d) => { d.inject.families = v.split(/[,，]/).map((s) => s.trim()).filter((s) => s !== '') })}
       />
       <div style={hint}>{t('injectFamiliesHint')}</div>
+      <span
+        ref={(node: HTMLElement | null) => { if (node && !node.firstChild) node.appendChild(mountStarRow()) }}
+      />
     </div>
   )
 }
