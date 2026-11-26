@@ -4,6 +4,8 @@
 
 媒体感知插件：把本地 video / audio / image 变成**结构化证据**（时间线 / 转写 / 版面区域）注入对话，让文本模型引用具体帧、秒、说话人 —— **Evidence, not imagination**。同时内置 provider 路由线：每个媒体一条 failover 链，预算超限自动降级，每次尝试记录在 `meta.attempts` —— **a fallback is never silent**。
 
+> **依赖关系（可选 peer，前置说明）**：透镜链的「多模态真传」依赖两个姊妹插件——`dsh-thinking-levels`（模型配置录入 / 认证与 reasoning_effort 管理面，音视频直传链路的模型由此登记）与 `dsh-llm-openai-completions`（OpenAI-compatible 传输接管，把 file 块序列化成 video_url / input_audio 真正上送）。二者声明为 optional peer，与 `dsh-prime-memory` 依赖 `@deepseek-ai/dsh-llm` 同一 tier；不装则相应能力自动降级、不报错。详见下方「配合插件」。
+
 ```
 media_read_video / media_read_audio / media_read_image
   → 路径守卫（存在性 + 扩展名白名单）

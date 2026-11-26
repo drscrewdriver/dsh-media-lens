@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.6
+
+- 依赖关系固化 + 描述前置：把两个姊妹插件的**可选 peer**（`dsh-thinking-levels` / `dsh-llm-openai-completions`）移到 `peerDependencies` 最前，并在 `package.json` / `dsh.plugin.json` 描述最前讲清关系——透镜链的多模态真传依赖 `dsh-thinking-levels`（注册模型 + 推理档位）与 `dsh-llm-openai-completions`（OpenAI-compatible 传输接管，把 audio/video/PDF 真正内联上送）。区间沿用宽松 `>=`，**不钉死具体版本**；未安装时对应能力自动降级，不报错。
+- 与 `dsh-prime-memory` 对 `@deepseek-ai/dsh-llm` 的可选 peer 同一层级：姊妹插件只在宿主 profile 内由 bundles 各自注册，optional peer 不触发 npm 拉装、不与宿主版本闸门冲突。
+
 ## 0.3.5
 
 - i18n: adiciona o locale português (pt-BR) — dicionário em tempo de execução, metadados do pacote e espelho README.

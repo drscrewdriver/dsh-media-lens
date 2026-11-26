@@ -1,7 +1,7 @@
 {
   "name": "dsh-media-lens",
-  "version": "0.3.5",
-  "description": "Media evidence lens + provider router for DeepSeek Harness: media_read_video / media_read_audio / media_read_image turn local media into structured evidence (timeline / transcript / regions) via host-registered multimodal models first, configured OpenAI-compatible endpoints second, and local ffmpeg/CLI fallbacks last. Every fallback is recorded in meta.attempts — a fallback is never silent.",
+  "version": "0.3.6",
+  "description": "Media evidence lens + provider router for DeepSeek Harness: media_read_video / media_read_audio / media_read_image turn local media into structured evidence (timeline / transcript / regions). Built on two optional peer plugins — dsh-thinking-levels (model registration + reasoning control) and dsh-llm-openai-completions (OpenAI-compatible transport takeover that makes audio/video/PDF true-send inline) — then host-registered multimodal models first, configured OpenAI-compatible endpoints second, and local ffmpeg/CLI fallbacks last. Every fallback is recorded in meta.attempts — a fallback is never silent.",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -61,6 +61,8 @@
     "@deepseek-ai/schemastery": "^3.18.4"
   },
   "peerDependencies": {
+    "dsh-llm-openai-completions": ">=0.4.4",
+    "dsh-thinking-levels": ">=4.4.4",
     "@deepseek-ai/cordis": "^4.0.2",
     "@deepseek-ai/dsh-attachment": ">=0.1.7-rc.1 <0.3.0-0",
     "@deepseek-ai/dsh-client-locale": ">=0.1.7-rc.1 <0.3.0-0",
@@ -68,11 +70,15 @@
     "@deepseek-ai/dsh-client-ui-slots": ">=0.1.7-rc.1 <0.3.0-0",
     "@deepseek-ai/dsh-llm": ">=0.1.7-rc.1 <0.3.0-0",
     "@deepseek-ai/dsh-tools": ">=0.1.7-rc.1 <0.3.0-0",
-    "dsh-llm-openai-completions": ">=0.4.4",
-    "dsh-thinking-levels": ">=4.4.4",
     "react": ">=18 <19"
   },
   "peerDependenciesMeta": {
+    "dsh-llm-openai-completions": {
+      "optional": true
+    },
+    "dsh-thinking-levels": {
+      "optional": true
+    },
     "@deepseek-ai/dsh-client-locale": {
       "optional": true
     },
@@ -80,12 +86,6 @@
       "optional": true
     },
     "@deepseek-ai/dsh-client-ui-slots": {
-      "optional": true
-    },
-    "dsh-llm-openai-completions": {
-      "optional": true
-    },
-    "dsh-thinking-levels": {
       "optional": true
     }
   },
